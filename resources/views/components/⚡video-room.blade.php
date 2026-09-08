@@ -278,6 +278,13 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                                 await this.peerConnection.setLocalDescription({ type: 'rollback' });
                             }
 
+                            // Laravel TrimStrings middleware strips the trailing \r\n from the SDP, causing Invalid SDP errors!
+                            if (sig.payload && typeof sig.payload.sdp === 'string') {
+                                if (!sig.payload.sdp.endsWith('\r\n')) {
+                                    sig.payload.sdp += '\r\n';
+                                }
+                            }
+
                             await this.peerConnection.setRemoteDescription(new RTCSessionDescription(sig.payload));
                             console.log('[WebRTC] Remote description (offer) set');
 
@@ -298,6 +305,13 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                         } else if (sig.type === 'answer') {
                             console.log('[WebRTC] Remote answer received. Current state:', this.peerConnection.signalingState);
                             if (this.peerConnection.signalingState === 'have-local-offer') {
+                                // Laravel TrimStrings middleware strips the trailing \r\n from the SDP, causing Invalid SDP errors!
+                                if (sig.payload && typeof sig.payload.sdp === 'string') {
+                                    if (!sig.payload.sdp.endsWith('\r\n')) {
+                                        sig.payload.sdp += '\r\n';
+                                    }
+                                }
+
                                 await this.peerConnection.setRemoteDescription(new RTCSessionDescription(sig.payload));
                                 console.log('[WebRTC] Remote description (answer) set successfully');
 
