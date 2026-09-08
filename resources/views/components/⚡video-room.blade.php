@@ -159,14 +159,12 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                     this.startSignalingPolling();
                     await this.sendSignal('status', { status: 'joined', role: this.userRole, name: this.userName });
 
-                    if (this.isDoctor) {
-                        setTimeout(async () => {
-                            if (this.inCall && !this.hasInitiatedOffer && this.peerConnection && this.peerConnection.signalingState === 'stable') {
-                                console.log('[WebRTC] Doctor auto-initiating offer after room startup...');
-                                await this.initiateOffer();
-                            }
-                        }, 750);
-                    }
+                    setTimeout(async () => {
+                        if (this.inCall && !this.hasInitiatedOffer && this.peerConnection && this.peerConnection.signalingState === 'stable') {
+                            console.log('[WebRTC] Auto-initiating offer after room startup...');
+                            await this.initiateOffer();
+                        }
+                    }, 750);
                 },
 
                 createPeerConnection() {
@@ -237,10 +235,10 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                 },
 
                 async initiateOffer(force = false) {
-                    if (!this.isDoctor || !this.peerConnection) return;
+                    if (!this.peerConnection) return;
                     if (this.isMakingOffer) return;
                     if (this.hasInitiatedOffer && !force) return;
-                    if (this.peerConnection.signalingState !== 'stable') {
+                    if (!force && this.peerConnection.signalingState !== 'stable') {
                         console.warn('[WebRTC] Cannot initiate offer when signalingState is', this.peerConnection.signalingState);
                         return;
                     }
@@ -269,9 +267,15 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                     try {
                         if (sig.type === 'offer') {
                             console.log('[WebRTC] Remote offer received. Current state:', this.peerConnection.signalingState);
+                            
+                            const isPolite = this.clientId > (sig.client_id || '');
                             if (this.peerConnection.signalingState !== 'stable') {
-                                console.warn('[WebRTC] State is not stable, ignoring redundant offer');
-                                return;
+                                if (!isPolite) {
+                                    console.warn('[WebRTC] State is not stable. We are impolite, ignoring remote offer.');
+                                    return;
+                                }
+                                console.warn('[WebRTC] State is not stable, but we are polite. Rolling back local offer.');
+                                await this.peerConnection.setLocalDescription({ type: 'rollback' });
                             }
 
                             await this.peerConnection.setRemoteDescription(new RTCSessionDescription(sig.payload));
@@ -331,8 +335,8 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                         } else if (sig.type === 'status') {
                             if (sig.payload.status === 'joined') {
                                 this.peerOnline = true;
-                                if (this.isDoctor && !this.hasInitiatedOffer) {
-                                    console.log('[WebRTC] Peer joined announcement received, doctor generating offer...');
+                                if (!this.hasInitiatedOffer && this.peerConnection && this.peerConnection.signalingState === 'stable') {
+                                    console.log('[WebRTC] Peer joined announcement received, generating offer...');
                                     await this.initiateOffer();
                                 }
                             }
@@ -374,8 +378,8 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                             const wasPeerOnline = this.peerOnline;
                             this.peerOnline = data.peer_online;
 
-                            if (this.isDoctor && this.peerOnline && !wasPeerOnline && !this.hasInitiatedOffer && this.peerConnection && this.peerConnection.signalingState === 'stable') {
-                                console.log('[WebRTC] Peer came online! Doctor auto-initiating offer...');
+                            if (this.peerOnline && !wasPeerOnline && !this.hasInitiatedOffer && this.peerConnection && this.peerConnection.signalingState === 'stable') {
+                                console.log('[WebRTC] Peer came online! Auto-initiating offer...');
                                 await this.initiateOffer();
                             }
 
@@ -806,13 +810,14 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                                         <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-slate-950" :class="peerOnline ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'"></span>
                                     </div>
                                     <h3 class="text-white text-base font-bold" x-text="peerName"></h3>
-                                    <p class="text-xs text-slate-400 mt-1 max-w-sm">
-                                        <template x-if="peerOnline">
-                                            <span>Peer detected in waiting room. Establishing direct encrypted P2P channel...</span>
-                                        </template>
-                                        <template x-if="!peerOnline">
-                                            <span>Awaiting other participant to enter the consultation room. Signaling active...</span>
-                                        </template>
+                                    <p class="text-slate-400 text-sm max-w-sm" x-show="peerOnline">
+                                        Peer detected in waiting room. Establishing direct encrypted connection...
+                                    </p>
+                                    <button x-show="peerOnline && !hasRemoteStream" @click="initiateOffer(true)" class="mt-4 px-4 py-2 bg-emerald-600 rounded-xl text-white text-xs font-bold hover:bg-emerald-700 shadow-sm transition-colors border border-emerald-500">
+                                        Force Reconnect
+                                    </button>
+                                    <p class="text-slate-400 text-sm max-w-sm" x-show="!peerOnline">
+                                        Waiting for <span x-text="peerName"></span> to join the encrypted room...
                                     </p>
                                 </div>
 
