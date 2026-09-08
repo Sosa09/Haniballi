@@ -104,7 +104,7 @@ class WebRtcSignalingController extends Controller
         $signals = $query->orderBy('id', 'asc')->get();
 
         $formattedSignals = $signals->map(function (VideoCallSignal $signal): array {
-            $decoded = json_decode($signal->payload, true);
+            $decoded = is_string($signal->payload) ? json_decode($signal->payload, true) : null;
 
             return [
                 'id' => $signal->id,
@@ -113,7 +113,7 @@ class WebRtcSignalingController extends Controller
                 'sender_role' => $signal->sender_role,
                 'type' => $signal->type,
                 'payload' => $decoded ?? $signal->payload,
-                'created_at' => $signal->created_at->toISOString(),
+                'created_at' => $signal->created_at ? $signal->created_at->toISOString() : now()->toISOString(),
             ];
         });
 
@@ -124,17 +124,20 @@ class WebRtcSignalingController extends Controller
         if (! empty($clientId)) {
             $cacheKey = "room_presence_{$appointment->id}";
             $presence = cache()->get($cacheKey, []);
+            if (!is_array($presence)) {
+                $presence = [];
+            }
             $presence[$clientId] = [
                 'user_id' => $user->id,
-                'role' => $user->role,
+                'role' => $user->role ?? 'unknown',
                 'last_seen' => now()->timestamp,
             ];
             // Prune sessions not heard from in 6 seconds
-            $presence = array_filter($presence, fn ($c) => (now()->timestamp - $c['last_seen']) <= 6);
+            $presence = array_filter($presence, fn ($c) => is_array($c) && isset($c['last_seen']) && (now()->timestamp - $c['last_seen']) <= 6);
             cache()->put($cacheKey, $presence, 60);
 
             foreach ($presence as $cid => $info) {
-                if ($cid !== $clientId && $info['user_id'] !== $user->id) {
+                if ($cid !== $clientId && isset($info['user_id']) && $info['user_id'] !== $user->id) {
                     $peerOnline = true;
                     break;
                 }
