@@ -137,7 +137,7 @@ class WebRtcSignalingController extends Controller
             cache()->put($cacheKey, $presence, 60);
 
             foreach ($presence as $cid => $info) {
-                if ($cid !== $clientId && isset($info['user_id']) && $info['user_id'] !== $user->id) {
+                if ($cid !== $clientId) {
                     $peerOnline = true;
                     break;
                 }
