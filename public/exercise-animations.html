@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Exercise Animation Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base breathing effect for realism */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.015); filter: brightness(1.05); }
+        }
+        
+        .breathe-wrapper {
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        /* 1. Squat (Translates down, slight scale down to mimic depth) */
+        @keyframes squat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            30% { transform: translateY(18px) scale(0.97); } /* Going down */
+            45% { transform: translateY(18px) scale(0.97); } /* Hold the squat */
+            80% { transform: translateY(0) scale(1); }       /* Coming up */
+        }
+        .anim-squat { 
+            animation: squat 3.5s ease-in-out infinite; 
+            transform-origin: bottom center; 
+        }
+
+        /* 2. Bridge (Translates up to mimic hip thrust) */
+        @keyframes bridge {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            30% { transform: translateY(-12px) rotate(-1deg); } /* Hips up */
+            45% { transform: translateY(-12px) rotate(-1deg); } /* Hold */
+            80% { transform: translateY(0) rotate(0); }         /* Down */
+        }
+        .anim-bridge { 
+            animation: bridge 3s ease-in-out infinite; 
+            transform-origin: bottom center; 
+        }
+
+        /* 3. Neck Tilt (Rotates side to side) */
+        @keyframes neck {
+            0%, 100% { transform: rotate(0) translateX(0); }
+            25% { transform: rotate(3deg) translateX(4px); }
+            75% { transform: rotate(-3deg) translateX(-4px); }
+        }
+        .anim-neck { 
+            animation: neck 4.5s ease-in-out infinite; 
+            transform-origin: top center; 
+        }
+
+        /* 4. Cat Cow (Scale Y to mimic arching the back) */
+        @keyframes catcow {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            40% { transform: translateY(-8px) scaleY(1.04); } /* Arch back */
+            50% { transform: translateY(-8px) scaleY(1.04); } /* Hold */
+        }
+        .anim-catcow { 
+            animation: catcow 4s ease-in-out infinite; 
+            transform-origin: center center; 
+        }
+
+        /* Smoothing image rendering during transform */
+        img {
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen p-8 flex flex-col items-center font-sans">
+    
+    <div class="text-center mb-10 max-w-3xl">
+        <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+            2.5D Animation Prototype
+        </h1>
+        <p class="text-slate-400 text-lg">
+            Since AI generates high-quality static images, the most elegant and lightweight way to "animate" them in a web app (without forcing the user to download heavy video files) is using <strong class="text-emerald-400">CSS 2.5D Transformations</strong>.
+        </p>
+        <p class="text-slate-500 mt-2">
+            This adds a realistic "breathing" effect and maps the movement directly to the biomechanics of the exercise (e.g., squatting goes down, bridging goes up).
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-5xl">
+
+        <!-- Squat -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl flex flex-col items-center shadow-2xl">
+            <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                Squat (Downward Force)
+            </h2>
+            <div class="overflow-hidden rounded-2xl border border-slate-700/50 w-full max-w-sm bg-black relative shadow-inner">
+                <div class="breathe-wrapper">
+                    <img src="/images/exercises/squat.jpg" class="w-full h-auto anim-squat" alt="Squat">
+                </div>
+            </div>
+        </div>
+
+        <!-- Bridge -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl flex flex-col items-center shadow-2xl">
+            <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span>
+                Glute Bridge (Upward Force)
+            </h2>
+            <div class="overflow-hidden rounded-2xl border border-slate-700/50 w-full max-w-sm bg-black relative shadow-inner">
+                <div class="breathe-wrapper">
+                    <img src="/images/exercises/bridge.jpg" class="w-full h-auto anim-bridge" alt="Bridge">
+                </div>
+            </div>
+        </div>
+
+        <!-- Neck Tilt -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl flex flex-col items-center shadow-2xl">
+            <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-purple-500 animate-pulse"></span>
+                Neck Tilt (Lateral Force)
+            </h2>
+            <div class="overflow-hidden rounded-2xl border border-slate-700/50 w-full max-w-sm bg-black relative shadow-inner">
+                <div class="breathe-wrapper">
+                    <img src="/images/exercises/necktilt.jpg" class="w-full h-auto anim-neck" alt="Neck Tilt">
+                </div>
+            </div>
+        </div>
+
+        <!-- Cat Cow -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl flex flex-col items-center shadow-2xl">
+            <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-orange-500 animate-pulse"></span>
+                Cat-Cow (Arching Force)
+            </h2>
+            <div class="overflow-hidden rounded-2xl border border-slate-700/50 w-full max-w-sm bg-black relative shadow-inner">
+                <div class="breathe-wrapper">
+                    <img src="/images/exercises/catcow.jpg" class="w-full h-auto anim-catcow" alt="Cat Cow">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
