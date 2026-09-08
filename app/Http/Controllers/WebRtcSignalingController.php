@@ -46,7 +46,7 @@ class WebRtcSignalingController extends Controller
                 [
                     'room_name' => 'appointment_'.$appointment->id,
                     'room_url' => route('video.room', $appointment->id),
-                    'provider' => 'native_webrtc',
+                    'provider' => 'daily',
                     'status' => 'active',
                     'started_at' => now(),
                 ]
