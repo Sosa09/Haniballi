@@ -364,7 +364,7 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                     if (!this.inCall) return;
 
                     try {
-                        const res = await fetch(`/video/${this.appointmentId}/signals?last_id=${this.lastSignalId}&client_id=${encodeURIComponent(this.clientId)}`, {
+                        const res = await fetch(`{{ url('/video') }}/${this.appointmentId}/signals?last_id=${this.lastSignalId}&client_id=${encodeURIComponent(this.clientId)}`, {
                             headers: { 'Accept': 'application/json' }
                         });
 
@@ -395,7 +395,7 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                         const tokenEl = document.querySelector('meta[name="csrf-token"]');
                         const token = tokenEl ? tokenEl.getAttribute('content') : '';
 
-                        await fetch(`/video/${this.appointmentId}/signal`, {
+                        await fetch(`{{ url('/video') }}/${this.appointmentId}/signal`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -505,7 +505,7 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                         const tokenEl = document.querySelector('meta[name="csrf-token"]');
                         const token = tokenEl ? tokenEl.getAttribute('content') : '';
 
-                        const res = await fetch(`/video/${this.appointmentId}/notes`, {
+                        const res = await fetch(`{{ url('/video') }}/${this.appointmentId}/notes`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -546,7 +546,7 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                     try {
                         const tokenEl = document.querySelector('meta[name="csrf-token"]');
                         const token = tokenEl ? tokenEl.getAttribute('content') : '';
-                        await fetch(`/video/${this.appointmentId}/leave`, {
+                        await fetch(`{{ url('/video') }}/${this.appointmentId}/leave`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
