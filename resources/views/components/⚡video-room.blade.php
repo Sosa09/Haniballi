@@ -375,7 +375,7 @@ new #[Title('Clinical Telehealth Consultation - Dr. Mehdi Haniballi')] class ext
                     this.pollSignals();
                     this.pollingInterval = setInterval(() => {
                         this.pollSignals();
-                    }, 1200);
+                    }, 3000); // Increased from 1200ms to 3000ms to prevent shared hosting DB throttling
                 },
 
                 async pollSignals() {
